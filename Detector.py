@@ -60,8 +60,8 @@ print(classification_type)
 # in the column 'dx_type'
 indexes_consensus = df[df['dx_type'] == 'consensus'].index
 indexes_follow_up = df[df['dx_type'] == 'follow_up'].index
-df.drop(indexes_consensus, inplace=True)
-df.drop(indexes_follow_up, inplace=True)
+df = df.drop(indexes_consensus)
+df = df.drop(indexes_follow_up)
 classification_type = pd.unique(df['dx_type'])
 print(classification_type)
 
@@ -80,8 +80,16 @@ encoder = preprocessing.LabelEncoder()
 labels = encoder.fit_transform(df['dx'])
 df['target'] = labels
 
+
 # Now we would like to count the numbers of skin cancers according to each
 # category to see if the dataset is well balanced or not.
+instances_cancer = df['target'].value_counts()
+instances_cancer
+
+# From the results it appears that the dataset is highly imbalanced, thus we
+# might consider some technique of expansion for those categories that suffer
+# of a lack of instances with respect to those that have a high number instead.
+
 path_part_1 = '/Users/tommasocapecchi/Datasets/HAM10000/Images'
 dataset = []
 
