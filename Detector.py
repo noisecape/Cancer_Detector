@@ -30,4 +30,12 @@ disease_dictionary = {'bkl': 'Benign Keratosis', 'nv': 'Melanocytic Nevi', 'df':
 # the analysis.
 classification_type = pd.unique(df['dx_type'])
 print(classification_type)
-print('to be finished')
+# Drop the rows that have the 'consensus' or 'follow_up' value in the column 'dx_type'
+indexes_consensus = df[df['dx_type'] == 'consensus'].index
+indexes_follow_up = df[df['dx_type'] == 'follow_up'].index
+df.drop(indexes_consensus, inplace=True)
+df.drop(indexes_follow_up, inplace=True)
+classification_type = pd.unique(df['dx_type'])
+print(classification_type)
+
+# Let's now check for NA values and columns that have NA values
