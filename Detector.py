@@ -36,6 +36,20 @@ indexes_follow_up = df[df['dx_type'] == 'follow_up'].index
 df.drop(indexes_consensus, inplace=True)
 df.drop(indexes_follow_up, inplace=True)
 classification_type = pd.unique(df['dx_type'])
-print(classification_type)
+print(df.head)
 
 # Let's now check for NA values and columns that have NA values
+df.isnull().any()
+
+median = df['age'].median()
+df['age'] = df['age'].fillna(median)
+df.isnull().any()   
+
+path_part_1 = '/Users/tommasocapecchi/Datasets/HAM10000/Images'
+dataset = []
+for image_name in df['image_id']:
+    image_path = os.path.join(path_part_1, image_name+'.jpg')
+    image = plt.imread(image_path, format='jpg')
+    dataset.append(image)
+    
+print(dataset)
