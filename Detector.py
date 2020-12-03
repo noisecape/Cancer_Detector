@@ -62,6 +62,7 @@ indexes_consensus = df[df['dx_type'] == 'consensus'].index
 indexes_follow_up = df[df['dx_type'] == 'follow_up'].index
 df = df.drop(indexes_consensus)
 df = df.drop(indexes_follow_up)
+df = df.reset_index(drop=True)
 classification_type = pd.unique(df['dx_type'])
 print(classification_type)
 
@@ -72,6 +73,16 @@ median = df['age'].median()
 df['age'] = df['age'].fillna(median)
 df.isnull().any()   
 
+# Now it is useful to insert in the dataframe a column
+# where for each image, locate the local path.
+images_dir_path = '/Users/tommasocapecchi/Datasets/HAM10000/Images'
+dataset = []
+df
+
+for image_name in df['image_id']:
+    image_path = os.path.join(images_dir_path, image_name +'.jpg')
+    df['img_path'] = image_path
+    
 # In order to build a system capable to be trained and to give us results,
 # it is crucial to encode the different types of skin cancer into 
 # labels, to classify them. This is achieved using sklearn 
@@ -79,7 +90,6 @@ df.isnull().any()
 encoder = preprocessing.LabelEncoder()
 labels = encoder.fit_transform(df['dx'])
 df['target'] = labels
-
 
 # Now we would like to count the numbers of skin cancers according to each
 # category to see if the dataset is well balanced or not.
@@ -89,13 +99,8 @@ instances_cancer
 # From the results it appears that the dataset is highly imbalanced, thus we
 # might consider some technique of expansion for those categories that suffer
 # of a lack of instances with respect to those that have a high number instead.
+instances_cancer.plot(kind='bar', figsize=(10,8))
+plt.grid(which='major', linestyle='-', linewidth='0.5', color='green')
+plt.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+plt.show()
 
-path_part_1 = '/Users/tommasocapecchi/Datasets/HAM10000/Images'
-dataset = []
-
-# for image_name in df['image_id'][:10]:
-#     image_path = os.path.join(path_part_1, image_name +'.jpg')
-#     df['img_path'] = image_path
-#     image = plt.imread(image_path, format='jpg')
-#     dataset.append(image)
-    
