@@ -104,3 +104,36 @@ plt.grid(which='major', linestyle='-', linewidth='0.5', color='green')
 plt.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
 plt.show()
 
+# From the results it appears that the dataset is highly imbalanced, 
+# thus we might consider some technique of expansion for those categories that
+# suffer of a lack of instances with respect to those
+# that have a high number instead. For the moment we are not augmenting
+# any data, since we want to compare the performances of the model before
+# and after data augmentation.
+
+# Now let's build the set of the images with the corresponding labels.
+X = []
+y = np.array()
+for path_img, label in zip(df['img_path'], df['target']):
+    img = plt.imread(path_img, format='rgb')
+    X.append(img)
+    y.append(label)
+X = np.array(X)
+y = np.array(y).reshape(y.shape[0],1)
+
+
+#Let's now shuffle the data
+indices = np.random.permutation(X.shape[0])
+X = X[indices]
+y = y[indices]
+# To confirm that we are indeed importing the right images, let's visualise
+# some of them.
+
+# fig, axes = plt.subplots(3, 5)
+# for i, axi in enumerate(axes.flat):
+#     print(df['image_id'][:i])
+#     axi.imshow(X[i])
+#     axi.set(xticks=[], yticks=[],
+#             xlabel=y[i])
+# plt.show()
+# plt.close()
