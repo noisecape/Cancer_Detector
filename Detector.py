@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from sklearn import preprocessing
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 #LOAD DATA
 # The dataset contains 10015 images divided in two parts. 
@@ -25,7 +28,6 @@ images_type = {'bkl': 'Benign Keratosis',
                       'vasc': 'Vascular Lesions',
                       'bcc': 'Basal Cell Carcinoma',
                       'akiec': "Bowen's disease"}
-images_type
 df.replace(images_type.keys(), images_type.values(), inplace=True)
 df[:5]
 
@@ -73,28 +75,47 @@ median = df['age'].median()
 df['age'] = df['age'].fillna(median)
 df.isnull().any()   
 
+IMG_WIDTH = 64
+IMG_HEIGHT = 64
+
+import glob
+from PIL import Image
+# Because the images are 450x600, we want to resize them to a much scaled size.
+original_images_path = '/Users/tommasocapecchi/Datasets/HAM10000/Images/'
+images = [img for img in glob.glob(original_images_path+'*.jpg')]
+# Create a new folder to store all the processed images
+if not 'Processed_images' in os.listdir('/Users/tommasocapecchi/Datasets/HAM10000/'):
+    os.mkdir('/Users/tommasocapecchi/Datasets/HAM10000/Processed_images')
+
+for img, name in zip(images, df['image_id']):
+    data = Image.open(img)
+    data = data.resize((IMG_WIDTH, IMG_HEIGHT), Image.ANTIALIAS)
+    data.save('/Users/tommasocapecchi/Datasets/HAM10000/Processed_images/'+name+'.jpg')
+
 # Now it is useful to insert in the dataframe a column
 # where for each image, locate the local path.
-images_dir_path = '/Users/tommasocapecchi/Datasets/HAM10000/Images'
-dataset = []
-df
+images_dir_path = '/Users/tommasocapecchi/Datasets/HAM10000/Processed_images/'
 
+images_path = []
 for image_name in df['image_id']:
     image_path = os.path.join(images_dir_path, image_name +'.jpg')
-    df['img_path'] = image_path
+    images_path.append(image_path)
+
+df['img_path'] = images_path
     
 # In order to build a system capable to be trained and to give us results,
 # it is crucial to encode the different types of skin cancer into 
 # labels, to classify them. This is achieved using sklearn 
 # by the following code.
 encoder = preprocessing.LabelEncoder()
-labels = encoder.fit_transform(df['dx'])
+labels = encoder.fit_transform(df['dx']).reshape((-1,1))
 df['target'] = labels
 
 # Now we would like to count the numbers of skin cancers according to each
 # category to see if the dataset is well balanced or not.
 instances_cancer = df['target'].value_counts()
-instances_cancer
+n_classes = instances_cancer.shape[0]
+
 
 # From the results it appears that the dataset is highly imbalanced, thus we
 # might consider some technique of expansion for those categories that suffer
@@ -112,28 +133,88 @@ plt.show()
 # and after data augmentation.
 
 # Now let's build the set of the images with the corresponding labels.
+
 X = []
-y = np.array()
-for path_img, label in zip(df['img_path'], df['target']):
-    img = plt.imread(path_img, format='rgb')
-    X.append(img)
+y = []
+for path_img, label in zip(df['img_path'].values, df['target'].values):
+    image = plt.imread(path_img)
+    X.append(image)
     y.append(label)
-X = np.array(X)
-y = np.array(y).reshape(y.shape[0],1)
 
+X = np.array(X).reshape(-1, IMG_WIDTH, IMG_HEIGHT, 3)
+y = np.array(y).reshape(-1, 1) 
 
-#Let's now shuffle the data
+#Let's now shuffle the data and create the train, test sample
 indices = np.random.permutation(X.shape[0])
+df = df.reindex(indices)
 X = X[indices]
 y = y[indices]
+# # Let's also implement the one-hot-encoding technique to represents
+# # the class for each sample
+# one_encoding = []
+# for label in y:
+#     encoding = np.zeros((1, 7))
+#     encoding[label] = 1
+#     one_encoding.append(encoding)
+# y = np.asarray(one_encoding).transpose()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = .25, random_state = 42)
 # To confirm that we are indeed importing the right images, let's visualise
 # some of them.
+fig, axes = plt.subplots(3, 5)
+for i, axi in enumerate(axes.flat):
+    axi.imshow(X[i])
+    axi.set(xticks=[], yticks=[],
+            xlabel=np.argmax(y[i]))
+    
+plt.show()
+plt.close()
 
-# fig, axes = plt.subplots(3, 5)
-# for i, axi in enumerate(axes.flat):
-#     print(df['image_id'][:i])
-#     axi.imshow(X[i])
-#     axi.set(xticks=[], yticks=[],
-#             xlabel=y[i])
-# plt.show()
-# plt.close()
+# Now we are going to create our model and compile it to be ready for the
+# training phase
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides= 1,
+                           padding='same', input_shape=(64, 64, 3),
+                           activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides= 2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(n_classes, activation='softmax')])
+
+model.compile(loss='sparse_categorical_crossentropy',
+              optimizer='adam',
+              metrics =['accuracy'])
+
+model.summary()
+
+# Splitting the data into train and test sets
+history = model.fit(X_train, y_train, verbose=2, epochs=10)
+print(history)
+
+y_pred = model.predict(X_test)
+y_pred = np.argmax(y_pred, axis=1)
+y_compare = np.argmax(y_test, axis=1)
+score = accuracy_score(y_compare, y_pred)
+score
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
