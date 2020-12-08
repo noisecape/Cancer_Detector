@@ -68,7 +68,7 @@ df = df.reset_index(drop=True)
 classification_type = pd.unique(df['dx_type'])
 print(classification_type)
 
-# Let's now check for NA values and columns that have NA values
+# Let's now check for NA values and columns replace them
 df.isnull().any()
 #Replace those NA values with the median of the values of that column
 median = df['age'].median()
@@ -142,13 +142,17 @@ for path_img, label in zip(df['img_path'].values, df['target'].values):
     y.append(label)
 
 X = np.array(X).reshape(-1, IMG_WIDTH, IMG_HEIGHT, 3)
-y = np.array(y).reshape(-1, 1) 
+y = np.array(y).reshape(-1, 1)
 
 #Let's now shuffle the data and create the train, test sample
 indices = np.random.permutation(X.shape[0])
 df = df.reindex(indices)
 X = X[indices]
 y = y[indices]
+
+# Normalize Data
+X = np.asarray([x/255 for x in X])
+
 # # Let's also implement the one-hot-encoding technique to represents
 # # the class for each sample
 # one_encoding = []
@@ -157,7 +161,7 @@ y = y[indices]
 #     encoding[label] = 1
 #     one_encoding.append(encoding)
 # y = np.asarray(one_encoding).transpose()
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = .25, random_state = 42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = .25, train_size=.50,random_state = 42)
 # To confirm that we are indeed importing the right images, let's visualise
 # some of them.
 fig, axes = plt.subplots(3, 5)
@@ -173,12 +177,12 @@ plt.close()
 # training phase
 
 model = tf.keras.Sequential([
-    tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides= 1,
+    tf.keras.layers.Conv2D(64, kernel_size=(2, 2), strides= 1,
                            padding='same', input_shape=(64, 64, 3),
                            activation='relu'),
-    tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides= 2),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=1),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(256, activation='relu'),
     tf.keras.layers.Dense(n_classes, activation='softmax')])
 
 model.compile(loss='sparse_categorical_crossentropy',
@@ -188,15 +192,20 @@ model.compile(loss='sparse_categorical_crossentropy',
 model.summary()
 
 # Splitting the data into train and test sets
-history = model.fit(X_train, y_train, verbose=2, epochs=10)
+history = model.fit(X_train, y_train, batch_size=200, verbose=1, epochs=10)
 print(history)
 
 y_pred = model.predict(X_test)
 y_pred = np.argmax(y_pred, axis=1)
-y_compare = np.argmax(y_test, axis=1)
-score = accuracy_score(y_compare, y_pred)
-score
+score = accuracy_score(y_test, y_pred)
 
+# Althought results seems pretty poor, let's save it to retrieve them later.
+save_path = '.'
+model.save(os.path.join(save_path, "CNN_first_train"))
+
+# Visualize the confusion matrix to visualize the performance of the model.
+
+# Try different approach to improve results
 
 
 
