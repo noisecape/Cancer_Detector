@@ -2,7 +2,7 @@
 
 Solution to the module INM702 of MSc Artificial Intelligence at City, University of London.
 
-To run and execute the Notebook, the dataset can be downloaded at https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T. There are three files that are strictly required:
+To run and execute the Notebook, the dataset can be downloaded at https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T. There are three files that are **strictly required**:
 
 1. HAM10000_images_part1.zip (5000 JPEG files)
 2. HAM10000_images_part2.zip (5015 JPEG files)
