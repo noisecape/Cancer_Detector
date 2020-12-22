@@ -3,7 +3,9 @@
 Solution to the module INM702 of MSc Artificial Intelligence at City, University of London.
 
 # IMPORTANT: the solution written in the Notebook can take a long time when executed. To overcome this problem, the training history as well as some pre-processed images have been stored in the following google drive directory: https://drive.google.com/drive/u/0/folders/1PHpfQRiLVPKi8Irtcj-eabIQB1UCJf9U
-# Our suggestion is to download the folder available from the GDrive and store in into a preferred directory in your pc; then, move the Jupyter Notebook file in the same local directory, and finally execute the Notebook.
+## Our suggestion is to download the folder available from the GDrive and store it in a local directory of your pc; then, move the Jupyter Notebook file in the same local directory, and finally execute the Notebook.
+
+Alternatively, just follow the instructions below, but the whole process will take much longer time.
 
 To run and execute the Notebook, the dataset can be downloaded at https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T. There are three files that are **strictly required**:
 
